@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>App Asistencia</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap");
+:root{--bg:#f0f4f8;--primary:#1e3a5f;--secondary:#3b7dd8;--medical:#00897b;--emergency:#d32f2f;--success:#2e7d32;--gray:#78909c;--white:#fff;--shadow:0 4px 16px rgba(0,0,0,.10);}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Nunito",sans-serif;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;}
+.app{width:100%;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);max-width:480px;margin:0 auto;}
+.screen{display:none;flex-direction:column;height:100%;}
+.screen.active{display:flex;}
+header{background:var(--primary);padding:16px 20px;padding-top:max(16px,env(safe-area-inset-top));text-align:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+header h1{font-size:20px;color:var(--white);text-transform:uppercase;font-weight:900;letter-spacing:2px;}
+.header-medical{background:var(--medical);}
+.content{flex:1;padding:14px 16px;display:flex;flex-direction:column;overflow:hidden;gap:10px;}
+#scroll-contactos{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px;}
+#scroll-contactos::-webkit-scrollbar{display:none;}
+.contactos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.wrapper-contacto{position:relative;}
+.btn-opciones{position:absolute;top:-6px;right:-6px;background:var(--primary);color:white;width:26px;height:26px;border-radius:50%;border:2px solid white;font-weight:900;z-index:10;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,.3);line-height:1;}
+.btn-contacto{width:100%;height:160px;background:#fff;border:none;border-radius:16px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;}
+.btn-contacto:active{transform:scale(.96);box-shadow:0 2px 8px rgba(0,0,0,.10);}
+.foto-contacto-vacia{width:100%;height:110px;background:linear-gradient(135deg,#e3eaf2,#c8d8ec);border-radius:10px;}
+.foto-contacto-img{width:100%;height:110px;object-fit:cover;border-radius:10px;}
+.foto-contacto-icon{width:100%;height:110px;border-radius:10px;background:linear-gradient(135deg,#dbeeff,#b8d4f5);display:flex;align-items:center;justify-content:center;}
+.foto-contacto-icon svg{width:64px;height:64px;}
+.nombre-contacto{font-weight:800;font-size:13px;color:#1a2a3a;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;}
+.btn-app{width:100%;min-height:54px;border:none;border-radius:14px;font-size:15px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;text-transform:uppercase;letter-spacing:1px;gap:8px;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.15);transition:transform .1s,box-shadow .1s;}
+.btn-app:active{transform:scale(.97);box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.botones-sec{display:flex;gap:10px;flex-shrink:0;}
+.botones-sec .btn-app{flex:1;font-size:13px;min-height:54px;line-height:1.2;text-align:center;}
+.btn-medical{background:var(--medical);}
+.btn-sec{background:var(--secondary);}
+.btn-emergency{background:var(--emergency);font-size:17px;font-weight:900;}
+.btn-success{background:var(--success);}
+.btn-gray{background:var(--gray);}
+.punto{width:11px;height:11px;background:white;border-radius:50%;flex-shrink:0;}
+.info-contenedor{background:white;padding:14px;border-radius:16px;flex:1;overflow-y:auto;box-shadow:var(--shadow);}
+.dato-medico{margin-bottom:12px;}
+.dato-medico label{font-size:10px;color:#888;font-weight:800;display:block;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.dato-medico input{width:100%;padding:8px 10px;border-radius:10px;border:none;font-weight:700;font-size:16px;background:#f5f7fa;color:#1a2a3a;}
+.dato-medico input:not([disabled]){background:#eaf1fb;border:1.5px solid var(--secondary);}
+.sangre-highlight{color:var(--emergency)!important;font-size:22px!important;}
+.controles-row{display:flex;gap:10px;flex-shrink:0;}
+.form-grupo{margin-bottom:14px;}
+.form-grupo label{font-weight:800;font-size:13px;margin-bottom:5px;display:block;color:#1a2a3a;}
+.form-grupo input[type=text],.form-grupo input[type=number]{width:100%;padding:12px 14px;border:1.5px solid #dce4ef;border-radius:12px;font-size:16px;font-weight:600;color:#1a2a3a;background:white;}
+.form-grupo input:focus{outline:none;border-color:var(--secondary);}
+.upload-box{background:white;border:2px dashed var(--secondary);border-radius:14px;height:80px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.upload-box span{font-size:14px;font-weight:800;color:var(--secondary);text-transform:uppercase;letter-spacing:1px;}
+.file-ok{text-align:center;font-size:12px;margin-top:5px;color:var(--success);font-weight:700;}
+.pantalla-llamando{background:#111a26;}
+.pantalla-llamando header{background:#0d1520;}
+.flex-centrado{justify-content:space-evenly;align-items:center;}
+.foto-llamada{width:140px;height:140px;border-radius:20px;background:#2a3a4e;border:3px solid var(--secondary);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.foto-llamada img{width:100%;height:100%;object-fit:cover;}
+.info-llamada{text-align:center;}
+.nombre-llamada{font-size:28px;color:white;font-weight:900;}
+.estado-llamada{font-size:14px;color:#7a9cc0;margin-top:6px;font-weight:600;}
+.confirmar-msg{font-size:22px;font-weight:900;color:#1a2a3a;text-align:center;}
+.confirmar-btns{display:flex;gap:12px;width:100%;}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.opciones-card{background:white;border-radius:20px;padding:24px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;}
+.opciones-foto{width:90px;height:90px;border-radius:14px;object-fit:cover;background:linear-gradient(135deg,#e3eaf2,#c8d8ec);margin:0 auto 8px;display:block;}
+.opciones-nombre{font-size:20px;font-weight:900;color:#1a2a3a;text-align:center;text-transform:uppercase;margin-bottom:4px;}
+input[type=number]{-moz-appearance:textfield;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="pantalla-inicio" class="screen active">
+  <header><h1>Contactos</h1></header>
+  <div class="content">
+    <div id="scroll-contactos"><div class="contactos-grid" id="lista-contactos"></div></div>
+    <div class="botones-sec">
+      <button class="btn-app btn-medical" onclick="navegar('pantalla-info')">FICHA<br>MEDICA</button>
+      <button class="btn-app btn-sec" onclick="navegar('pantalla-agregar')">NUEVO<br>CONTACTO</button>
+    </div>
+    <button class="btn-app btn-emergency" onclick="navegar('pantalla-confirmar')">
+      <div class="punto"></div> EMERGENCIA 911
+    </button>
+  </div>
+</section>
+
+<section id="pantalla-info" class="screen">
+  <header class="header-medical"><h1>Ficha Medica</h1></header>
+  <div class="content">
+    <div class="info-contenedor">
+      <div class="dato-medico"><label>Nombre</label><input type="text" id="info-nombre" value="" placeholder="Tu nombre" maxlength="30" disabled></div>
+      <div class="dato-medico"><label>Tipo de Sangre</label><input type="text" id="info-sangre" value="" placeholder="Ej. O+" maxlength="4" class="sangre-highlight" disabled></div>
+      <div class="dato-medico"><label>Alergias</label><input type="text" id="info-alergias" value="" placeholder="Escribe tus alergias" maxlength="35" disabled></div>
+      <div class="dato-medico"><label>Doctor</label><input type="text" id="info-doctor" value="" placeholder="Nombre del doctor" maxlength="30" disabled></div>
+      <div class="dato-medico"><label>Tel. Doctor</label><input type="tel" id="info-tel-doc" value="" placeholder="10 digitos" maxlength="10" disabled></div>
+    </div>
+    <div id="controles-lectura" style="flex-direction:column;gap:10px;">
+      <button class="btn-app btn-sec" onclick="activarEdicion()">EDITAR DATOS</button>
+      <button class="btn-app btn-gray" onclick="navegar('pantalla-inicio')">VOLVER</button>
+    </div>
+    <div id="controles-edicion" style="display:none;flex-direction:column;gap:10px;">
+      <button class="btn-app btn-success" onclick="guardarMedico()">GUARDAR</button>
+      <button class="btn-app btn-gray" onclick="cancelarEdicion()">CANCELAR</button>
+    </div>
+  </div>
+</section>
+
+<section id="pantalla-agregar" class="screen">
+  <header><h1>Nuevo Contacto</h1></header>
+  <div class="content" style="overflow-y:auto">
+    <div class="form-grupo">
+      <label>Nombre:</label>
+      <input type="text" id="nombre-nuevo" maxlength="12" placeholder="Nombre">
+    </div>
+    <div class="form-grupo">
+      <label>Foto del contacto:</label>
+      <input type="file" id="foto-nueva" accept="image/*" style="display:none">
+      <div class="upload-box" onclick="document.getElementById('foto-nueva').click()">
+        <span>Seleccionar foto</span>
+      </div>
+      <p id="preview-status" class="file-ok"></p>
+    </div>
+    <div class="form-grupo">
+      <label>Telefono:</label>
+      <input type="number" id="tel-nuevo" placeholder="10 digitos" oninput="if(this.value.length>10)this.value=this.value.slice(0,10)">
+    </div>
+    <button class="btn-app btn-success" onclick="guardarContacto()">CREAR CONTACTO</button>
+    <button class="btn-app btn-gray" style="margin-top:8px" onclick="navegar('pantalla-inicio')">CANCELAR</button>
+  </div>
+</section>
+
+<section id="pantalla-confirmar" class="screen">
+  <header><h1>Confirmar</h1></header>
+  <div class="content flex-centrado">
+    <div class="confirmar-msg">Llamar a EMERGENCIA?</div>
+    <div class="confirmar-btns">
+      <button class="btn-app btn-success" style="flex:1" onclick="llamarA('911','',false)">SI</button>
+      <button class="btn-app btn-emergency" style="flex:1" onclick="navegar('pantalla-inicio')">NO</button>
+    </div>
+  </div>
+</section>
+
+<section id="pantalla-llamada" class="screen pantalla-llamando">
+  <header><h1>Llamando</h1></header>
+  <div class="content flex-centrado">
+    <div class="foto-llamada" id="foto-llamada"></div>
+    <div class="info-llamada">
+      <div class="nombre-llamada" id="nombre-llamada"></div>
+      <div class="estado-llamada">Marcando...</div>
+    </div>
+    <button class="btn-app btn-emergency" onclick="navegar('pantalla-inicio')">COLGAR</button>
+  </div>
+</section>
+
+<section id="pantalla-opciones" class="screen">
+  <header><h1>Opciones</h1></header>
+  <div class="content flex-centrado">
+    <div class="opciones-card" style="width:100%">
+      <div id="opciones-foto-wrap"></div>
+      <div class="opciones-nombre" id="opciones-nombre"></div>
+      <button class="btn-app btn-sec" onclick="irEditarContacto()">EDITAR CONTACTO</button>
+      <button class="btn-app btn-emergency" onclick="navegar('pantalla-confirmar-eliminar')">ELIMINAR CONTACTO</button>
+      <button class="btn-app btn-gray" onclick="navegar('pantalla-inicio')">VOLVER</button>
+    </div>
+  </div>
+</section>
+
+<section id="pantalla-editar" class="screen">
+  <header><h1>Editar Contacto</h1></header>
+  <div class="content" style="overflow-y:auto">
+    <div class="form-grupo">
+      <label>Nombre:</label>
+      <input type="text" id="edit-nombre" maxlength="12" placeholder="Nombre">
+    </div>
+    <div class="form-grupo">
+      <label>Nueva foto (opcional):</label>
+      <input type="file" id="edit-foto" accept="image/*" style="display:none">
+      <div class="upload-box" onclick="document.getElementById('edit-foto').click()">
+        <span>Seleccionar foto</span>
+      </div>
+      <p id="edit-foto-status" class="file-ok"></p>
+    </div>
+    <div class="form-grupo">
+      <label>Telefono:</label>
+      <input type="number" id="edit-tel" placeholder="10 digitos" oninput="if(this.value.length>10)this.value=this.value.slice(0,10)">
+    </div>
+    <button class="btn-app btn-success" onclick="guardarEdicion()">GUARDAR CAMBIOS</button>
+    <button class="btn-app btn-gray" style="margin-top:8px" onclick="navegar('pantalla-opciones')">CANCELAR</button>
+  </div>
+</section>
+
+<section id="pantalla-confirmar-eliminar" class="screen">
+  <header><h1>Eliminar</h1></header>
+  <div class="content flex-centrado">
+    <div class="confirmar-msg">Eliminar a <span id="confirmar-eliminar-nombre"></span>?</div>
+    <div class="confirmar-btns">
+      <button class="btn-app btn-emergency" style="flex:1" onclick="confirmarEliminar()">ELIMINAR</button>
+      <button class="btn-app btn-gray" style="flex:1" onclick="navegar('pantalla-opciones')">CANCELAR</button>
+    </div>
+  </div>
+</section>
+
+</div>
+<script>
+const DOCTOR_SVG_CARD = `<div class="foto-contacto-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect width="80" height="80" rx="14" fill="#dbeeff"/><circle cx="40" cy="26" r="14" fill="#3b7dd8"/><path d="M12 78c0-15.46 12.54-28 28-28s28 12.54 28 28" fill="#3b7dd8"/><rect x="35" y="52" width="10" height="16" rx="3" fill="white"/><rect x="30" y="57" width="20" height="6" rx="3" fill="white"/><circle cx="40" cy="60" r="3" fill="#3b7dd8"/></svg></div>`;
+const DOCTOR_SVG_OPC = `<div style="width:90px;height:90px;border-radius:14px;background:linear-gradient(135deg,#dbeeff,#b8d4f5);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80' style='width:54px;height:54px;'><rect width='80' height='80' rx='14' fill='#dbeeff'/><circle cx='40' cy='26' r='14' fill='#3b7dd8'/><path d='M12 78c0-15.46 12.54-28 28-28s28 12.54 28 28' fill='#3b7dd8'/><rect x='35' y='52' width='10' height='16' rx='3' fill='white'/><rect x='30' y='57' width='20' height='6' rx='3' fill='white'/><circle cx='40' cy='60' r='3' fill='#3b7dd8'/></svg></div>`;
+const DOCTOR_SVG_CALL = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" style="width:100px;height:100px;"><rect width="80" height="80" rx="14" fill="#dbeeff"/><circle cx="40" cy="26" r="14" fill="#3b7dd8"/><path d="M12 78c0-15.46 12.54-28 28-28s28 12.54 28 28" fill="#3b7dd8"/><rect x="35" y="52" width="10" height="16" rx="3" fill="white"/><rect x="30" y="57" width="20" height="6" rx="3" fill="white"/><circle cx="40" cy="60" r="3" fill="#3b7dd8"/></svg>`;
+
+let contactos=[
+  {nombre:"Doctor", tel:"", foto:"", icono:true},
+];
+
+function navegar(id){
+  if(id==="pantalla-info"&&fichaVacia()){
+    setTimeout(()=>{activarEdicion();},10);
+  }
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function renderContactos(){
+  const lista=document.getElementById("lista-contactos");
+  lista.innerHTML="";
+  if(contactos.length===0){
+    lista.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:#aab;font-size:14px;font-weight:700;">Sin contactos.<br>Agrega uno con el boton de abajo.</div>';
+    return;
+  }
+  contactos.forEach((c,i)=>{
+    const wrap=document.createElement("div");
+    wrap.className="wrapper-contacto";
+    const btnB=document.createElement("div");
+    btnB.className="btn-opciones";
+    btnB.innerHTML="&#8942;";
+    btnB.onclick=(e)=>{e.stopPropagation();abrirOpciones(i);};
+    const btn=document.createElement("button");
+    btn.className="btn-contacto";
+    btn.onclick=()=>llamarA(c.nombre,c.foto,c.icono);
+    const foto = c.icono ? DOCTOR_SVG_CARD : (c.foto ? `<img src="${c.foto}" class="foto-contacto-img">` : `<div class="foto-contacto-vacia"></div>`);
+    btn.innerHTML=`${foto}<span class="nombre-contacto">${c.nombre}</span>`;
+    wrap.appendChild(btnB);
+    wrap.appendChild(btn);
+    lista.appendChild(wrap);
+  });
+}
+
+let contactoActualIdx = -1;
+
+function abrirOpciones(i){
+  contactoActualIdx = i;
+  const c = contactos[i];
+  document.getElementById("opciones-nombre").innerText = c.nombre;
+  document.getElementById("confirmar-eliminar-nombre").innerText = c.nombre;
+  const wrap = document.getElementById("opciones-foto-wrap");
+  wrap.innerHTML = c.icono ? DOCTOR_SVG_OPC : (c.foto ? `<img src="${c.foto}" class="opciones-foto">` : `<div class="opciones-foto"></div>`);
+  navegar("pantalla-opciones");
+}
+
+function irEditarContacto(){
+  const c = contactos[contactoActualIdx];
+  document.getElementById("edit-nombre").value = c.nombre;
+  document.getElementById("edit-tel").value = c.tel;
+  document.getElementById("edit-foto-status").innerText = "";
+  document.getElementById("edit-foto").value = "";
+  navegar("pantalla-editar");
+}
+
+function guardarEdicion(){
+  const n = document.getElementById("edit-nombre").value.trim();
+  const t = document.getElementById("edit-tel").value;
+  if(!n || t.length < 10) return alert("Nombre y 10 digitos requeridos");
+  const fi = document.getElementById("edit-foto");
+  if(fi.files && fi.files[0]){
+    const r = new FileReader();
+    r.onload = e => {
+      contactos[contactoActualIdx] = {nombre:n, tel:t, foto:e.target.result, icono:false};
+      renderContactos();
+      navegar("pantalla-inicio");
+    };
+    r.readAsDataURL(fi.files[0]);
+  } else {
+    contactos[contactoActualIdx].nombre = n;
+    contactos[contactoActualIdx].tel = t;
+    contactos[contactoActualIdx].icono = false;
+    renderContactos();
+    navegar("pantalla-inicio");
+  }
+}
+
+function confirmarEliminar(){
+  contactos.splice(contactoActualIdx,1);
+  renderContactos();
+  navegar("pantalla-inicio");
+}
+
+function eliminar(i){
+  contactoActualIdx=i;
+  document.getElementById("confirmar-eliminar-nombre").innerText=contactos[i].nombre;
+  navegar("pantalla-confirmar-eliminar");
+}
+
+function llamarA(nombre,foto,icono){
+  document.getElementById("nombre-llamada").innerText=nombre;
+  const box=document.getElementById("foto-llamada");
+  if(nombre==="911"){
+    box.style.display="none";
+  } else {
+    box.style.display="flex";
+    box.innerHTML = icono ? DOCTOR_SVG_CALL : (foto ? `<img src="${foto}">` : "");
+  }
+  navegar("pantalla-llamada");
+}
+
+function fichaVacia(){
+  return [...document.querySelectorAll(".info-contenedor input")].some(i=>i.value.trim()==="");
+}
+function activarEdicion(){
+  document.querySelectorAll(".info-contenedor input").forEach(i=>i.disabled=false);
+  document.getElementById("controles-lectura").style.display="none";
+  document.getElementById("controles-edicion").style.display="flex";
+}
+function guardarMedico(){
+  const inputs=document.querySelectorAll(".info-contenedor input");
+  const vacio=[...inputs].some(i=>i.value.trim()==="");
+  if(vacio){alert("Por favor llena todos los campos antes de continuar.");return;}
+  inputs.forEach(i=>i.disabled=true);
+  document.getElementById("controles-lectura").style.display="flex";
+  document.getElementById("controles-edicion").style.display="none";
+}
+function cancelarEdicion(){
+  document.querySelectorAll(".info-contenedor input").forEach(i=>i.disabled=true);
+  document.getElementById("controles-lectura").style.display="flex";
+  document.getElementById("controles-edicion").style.display="none";
+  navegar("pantalla-inicio");
+}
+
+document.getElementById("foto-nueva").addEventListener("change",function(e){
+  if(e.target.files[0])document.getElementById("preview-status").innerText="Foto seleccionada";
+});
+document.getElementById("edit-foto").addEventListener("change",function(e){
+  if(e.target.files[0])document.getElementById("edit-foto-status").innerText="Foto seleccionada";
+});
+
+function guardarContacto(){
+  const n=document.getElementById("nombre-nuevo").value.trim();
+  const t=document.getElementById("tel-nuevo").value;
+  if(!n||t.length<10)return alert("Nombre y 10 digitos requeridos");
+  const fi=document.getElementById("foto-nueva");
+  if(fi.files&&fi.files[0]){
+    const r=new FileReader();
+    r.onload=e=>{contactos.push({nombre:n,tel:t,foto:e.target.result,icono:false});limpiarYVolver();};
+    r.readAsDataURL(fi.files[0]);
+  }else{
+    contactos.push({nombre:n,tel:t,foto:"",icono:false});
+    limpiarYVolver();
+  }
+}
+function limpiarYVolver(){
+  renderContactos();
+  document.getElementById("nombre-nuevo").value="";
+  document.getElementById("tel-nuevo").value="";
+  document.getElementById("foto-nueva").value="";
+  document.getElementById("preview-status").innerText="";
+  navegar("pantalla-inicio");
+}
+
+renderContactos();
+</script>
+</body>
+</html>
